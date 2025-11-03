@@ -5,11 +5,12 @@ from ..db import get_session
 from ..models import DailyChecklist
 from ..schemas import DailyChecklistIn, DailyChecklistOut
 from datetime import date
+from ..auth import require_user
 
 router = APIRouter(prefix="/checklist", tags=["checklist"])
 
 @router.post("", response_model=DailyChecklistOut)
-async def submit_checklist(payload: DailyChecklistIn, session: AsyncSession = Depends(get_session)):
+async def submit_checklist(payload: DailyChecklistIn, session: AsyncSession = Depends(get_session), user=Depends(require_user)):
     # Ensure one per day (unique user/day later—single user now)
     exists = await session.scalar(
         select(DailyChecklist).where(DailyChecklist.trade_date == payload.trade_date)
